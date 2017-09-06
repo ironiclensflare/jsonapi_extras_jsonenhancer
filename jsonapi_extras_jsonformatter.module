@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * @file
+ * Contains jsonapi_extras_jsonformatter.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\taxonomy\Entity\Term;
+
+/**
+ * Implements hook_help().
+ */
+function jsonapi_extras_jsonformatter_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the jsonapi_extras_jsonformatter module.
+    case 'help.page.jsonapi_extras_jsonformatter':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('JSON Formatter') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave().
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ */
+function jsonapi_extras_jsonformatter_node_presave(Drupal\Core\Entity\EntityInterface $entity) {
+  if(!isSubmission($entity)) return;
+  $source = getSource($entity);
+  if(!termExists($source, "source")){
+    $newTerm = Term::create([
+      "name" => $source,
+      "vid" => "source"
+    ]);
+    $newTerm->save();
+  }
+  $term = taxonomy_term_load_multiple_by_name($source, "source");
+  $tid = key($term);
+  $entity->field_source->target_id = $tid;
+}
+
+function isSubmission($entity){
+  $type = $entity->getType();
+  return $type == 'submission';
+}
+
+function getSource($entity){
+  $item = $entity->get("field_source_text");
+  return $item->getValue()[0]["value"];
+}
+
+function termExists($term, $vocabulary){
+  $existingTerms = taxonomy_term_load_multiple_by_name($term, $vocabulary);
+  return $existingTerms;
+}

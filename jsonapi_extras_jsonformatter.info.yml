@@ -1,0 +1,7 @@
+name: jsonapi_extras_jsonformatter
+type: module
+description: JSON Formatter
+core: 8.x
+package: JSON Formatter
+dependencies:
+  - jsonapi_extras
